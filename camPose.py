@@ -10,8 +10,8 @@ distCoeffs = np.load('distCoeffs.npy')
 
 cap = cv2.VideoCapture(0)
 markerSize = 0.084
-f = open("robotPosition.csv", "a+")
-writer = csv.writer(f, delimiter=',')
+#f = open("robotPosition.csv", "a+")
+#writer = csv.writer(f, delimiter=',')
 while True:
     _, img = cap.read()
     # img=cv2.resize(img,(w,h))
@@ -26,9 +26,10 @@ while True:
         #cv2.aruco.drawAxis(img, cameraMatrix, distCoeffs, rvecs , tvecs, 0.1)
         t = float(time.time())
         for i, id in enumerate(ids):
+            cv2.drawFrameAxes(img, cameraMatrix, distCoeffs, rvecs[i] , tvecs[i], 0.1)
             data = [t, i, tvecs[i][0][0], tvecs[i][0][1], tvecs[i][0][2]]
-            writer.writerow(data)
-    f.flush()
+           #writer.writerow(data)
+    #f.flush()
     cv2.imshow("Output",img)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
