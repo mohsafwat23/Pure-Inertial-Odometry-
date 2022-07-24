@@ -2,7 +2,9 @@ import board
 import adafruit_bno055
 import time
 from MotorModule import Motor
-import pandas as pd
+import torch
+import numpy as np
+#import pandas as pd
 
 i2c = board.I2C()
 sensor = adafruit_bno055.BNO055_I2C(i2c)
@@ -21,10 +23,18 @@ sensor_not_calibrated = True
 
 while True:
     try:
-        print(sensor.acceleration)
-        print("accX: ",sensor.acceleration[0])
-        print("accY: ",sensor.acceleration[1])
-        print("accZ: ",sensor.acceleration[2])
-        time.sleep(0.5)
+        #if not None in (sensor.acceleration  + sensor.gyro):
+        X = np.array([
+            sensor.acceleration[0], sensor.acceleration[1], sensor.acceleration[2],
+            sensor.gyro[0], sensor.gyro[1], sensor.gyro[2]
+            ])
+        print(X)
+        #if not np.isnan(X).all():
+        if not None in X:
+            print(torch.tensor(X))
+        #print("accX: ",sensor.acceleration[0])
+        #print("accY: ",sensor.acceleration[1])
+        #print("accZ: ",sensor.acceleration[2])
+        #time.sleep(0.5)
     except KeyboardInterrupt:
         break

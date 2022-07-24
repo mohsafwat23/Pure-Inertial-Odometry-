@@ -7,7 +7,7 @@ from models.NNmodel import NN
 import numpy as np
 import board
 import adafruit_bno055
-from MotorModule import Motor
+from raspberryPi.MotorModule import Motor
 
 # Initiate motor, IMU, and calibrate IMU
 i2c = board.I2C()
@@ -22,7 +22,7 @@ while sensor_not_calibrated:
         if cal_counter > 10:
             print(sensor.acceleration)
             sensor_not_calibrated = False
-for i in range(250):
+for i in range(500):
     print(sensor.acceleration)
     time.sleep(0.1)
 
@@ -70,8 +70,9 @@ beta2 = 0.01
 angle_init = sensor.euler[0]
 
 while True:
-    events()
+
     try:
+        events()
         angle = sensor.euler[0] - angle_init
         if angle is not None:
             if angle > 180:
@@ -80,22 +81,25 @@ while True:
                 robot.moveForward(0.25, beta*angle, 0.005)
             else:
                 robot.moveForward(0.25, beta2*angle,0.005)
-        X = torch.tensor([
+        X = np.array([
             sensor.acceleration[0], sensor.acceleration[1], sensor.acceleration[2],
             sensor.gyro[0], sensor.gyro[1], sensor.gyro[2]
             ])
-        predicted = model(X).detach()
-        dx = predicted[0].item()*500.
-        dy = predicted[1].item()*500.
-        RobotX += dx
-        RobotY += dy
+        if not None in X:
+            X = torch.tensor(X)
+            predicted = model(X.float()).detach()
+            dx = predicted[0].item()*200.
+            dy = predicted[1].item()*200.
+            RobotX += dx
+            RobotY += dy
         i += 1
+        pygame.draw.circle(screen,BLUE,(int(RobotX),int(RobotY)),25,0)
+        #pygame.draw.line(screen,RED,(dxPrev, dyPrev),(int(RobotX),int(RobotY)))
+        pygame.display.update()
+        CLOCK.tick(FPS)
+        screen.fill(WHITE)
     except KeyboardInterrupt:
         robot.stop()
         break
-    pygame.draw.circle(screen,BLUE,(int(RobotX),int(RobotY)),25,0)
-    #pygame.draw.line(screen,RED,(dxPrev, dyPrev),(int(RobotX),int(RobotY)))
-    pygame.display.update()
-    CLOCK.tick(FPS)
-    screen.fill(WHITE)
+
     #time.sleep(0.1)
